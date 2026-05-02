@@ -9,9 +9,9 @@ import {
   NormalizedCacheObject,
 } from "@apollo/client"
 import { SupportedChainId } from "@wildcatfi/wildcat-sdk"
-import { getSubgraphClient } from "@/config/subgraph"
 
 import { NETWORKS } from "@/config/network"
+import { getSubgraphClient } from "@/config/subgraph"
 import { useSelectedNetwork } from "@/hooks/useSelectedNetwork"
 
 export type SubgraphClientType = ApolloClient<NormalizedCacheObject>
@@ -19,9 +19,7 @@ export type SubgraphClientType = ApolloClient<NormalizedCacheObject>
 const TargetNetworkEnv = process.env.NEXT_PUBLIC_TARGET_NETWORK
 const PROXY_URL = process.env.NEXT_PUBLIC_INDEXER_PROXY_URL
 
-function createSubgraphClient(
-  chainId: SupportedChainId
-): SubgraphClientType {
+function createSubgraphClient(chainId: SupportedChainId): SubgraphClientType {
   if (PROXY_URL) {
     return new ApolloClient({
       cache: new InMemoryCache(),

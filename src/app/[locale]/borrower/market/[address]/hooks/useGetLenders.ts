@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
 import { Market } from "@wildcatfi/wildcat-sdk"
-import { getSubgraphClient } from "@/config/subgraph"
 import {
   GetAuthorizedLendersByMarketDocument,
   SubgraphGetAuthorizedLendersByMarketQuery,
@@ -9,6 +8,7 @@ import {
 import { logger } from "@wildcatfi/wildcat-sdk/dist/utils/logger"
 
 import { QueryKeys } from "@/config/query-keys"
+import { getSubgraphClient } from "@/config/subgraph"
 
 export const useGetAuthorisedLendersByMarket = (market: Market | undefined) => {
   const subgraphClient = market?.chainId

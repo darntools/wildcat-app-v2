@@ -15,7 +15,7 @@ import { TargetChainId } from "@/config/network"
 const PROXY_URL = process.env.NEXT_PUBLIC_INDEXER_PROXY_URL
 
 export function getSubgraphClient(
-  chainId: SupportedChainId
+  chainId: SupportedChainId,
 ): ApolloClient<NormalizedCacheObject> {
   if (PROXY_URL) {
     return new ApolloClient({
