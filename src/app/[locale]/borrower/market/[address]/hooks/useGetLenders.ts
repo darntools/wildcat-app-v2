@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { Market, getSubgraphClient } from "@wildcatfi/wildcat-sdk"
+import { Market } from "@wildcatfi/wildcat-sdk"
+import { getSubgraphClient } from "@/config/subgraph"
 import {
   GetAuthorizedLendersByMarketDocument,
   SubgraphGetAuthorizedLendersByMarketQuery,

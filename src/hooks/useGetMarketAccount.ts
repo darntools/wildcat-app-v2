@@ -8,7 +8,6 @@ import {
   MarketVersion,
   Market,
   MarketAccount,
-  getSubgraphClient,
   SignerOrProvider,
 } from "@wildcatfi/wildcat-sdk"
 import { SubgraphGetMarketQueryVariables } from "@wildcatfi/wildcat-sdk/dist/gql/graphql"
@@ -16,6 +15,7 @@ import { constants } from "ethers"
 
 import { POLLING_INTERVAL } from "@/config/polling"
 import { QueryKeys } from "@/config/query-keys"
+import { getSubgraphClient } from "@/config/subgraph"
 import { useEthersProvider } from "@/hooks/useEthersSigner"
 import { useSelectedNetwork } from "@/hooks/useSelectedNetwork"
 import { TwoStepQueryHookResult } from "@/utils/types"

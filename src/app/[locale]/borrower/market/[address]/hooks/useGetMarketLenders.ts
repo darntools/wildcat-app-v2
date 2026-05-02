@@ -10,13 +10,13 @@ import {
   MarketVersion,
   SignerOrProvider,
   SupportedChainId,
-  getSubgraphClient,
 } from "@wildcatfi/wildcat-sdk"
 import { BigNumber } from "ethers"
 import { useAccount } from "wagmi"
 
 import { POLLING_INTERVAL } from "@/config/polling"
 import { QueryKeys } from "@/config/query-keys"
+import { getSubgraphClient } from "@/config/subgraph"
 import { useEthersProvider } from "@/hooks/useEthersSigner"
 
 export const useGetMarketLenders = (market?: Market) => {

@@ -3,10 +3,10 @@ import {
   Market,
   MarketRecordKind,
   getMarketRecords,
-  getSubgraphClient,
 } from "@wildcatfi/wildcat-sdk"
 
 import { QueryKeys } from "@/config/query-keys"
+import { getSubgraphClient } from "@/config/subgraph"
 import { useSelectedNetwork } from "@/hooks/useSelectedNetwork"
 
 export type UseMarketRecordsProps = {
