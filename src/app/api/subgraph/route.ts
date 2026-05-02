@@ -102,10 +102,16 @@ async function handleGetAllMarketsForLenderView(vars: Variables) {
 async function handleGetLenderAccountForMarket(vars: Variables) {
   const market = (vars.market as string).toLowerCase()
   const lender = (vars.lender as string).toLowerCase()
-  const data = (await indexerGet(
-    `/markets/${CHAIN_ID}/${market}/lenders/${lender}`,
-  )) as Record<string, unknown>
-  return data
+  const resp = await fetch(
+    `${INDEXER_URL}/markets/${CHAIN_ID}/${market}/lenders/${lender}`,
+    { headers: { Accept: "application/json" }, next: { revalidate: 0 } },
+  )
+  if (resp.status === 404) {
+    const marketData = await handleGetMarket({ market } as Variables)
+    return { market: { ...(marketData as { market: object }).market, lenders: [] } }
+  }
+  if (!resp.ok) throw new Error(`Indexer ${resp.status}: ${await resp.text()}`)
+  return resp.json()
 }
 
 async function handleGetActiveLendersByMarket(vars: Variables) {
