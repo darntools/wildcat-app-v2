@@ -139,6 +139,15 @@ async function handleGetAllHooksDataForBorrower(vars: Variables) {
   return data
 }
 
+async function handleGetIncompleteWithdrawalsForMarket(vars: Variables) {
+  const market = (vars.market as string).toLowerCase()
+  const limit = vars.numWithdrawalBatches ?? 100
+  const data = (await indexerGet(
+    `/markets/${CHAIN_ID}/${market}/withdrawals?include_details=true&incomplete_only=true&limit=${limit}`,
+  )) as { batches: Record<string, unknown>[] }
+  return { market: { withdrawalBatches: data.batches } }
+}
+
 async function handleGetMarketRecords(vars: Variables) {
   const market = (vars.market as string).toLowerCase()
   const limit = vars.limit ?? 500
@@ -250,6 +259,8 @@ const QUERY_HANDLERS: Record<string, (vars: Variables) => Promise<unknown>> = {
     handleGetLendersByHooksInstanceOrController,
   getMarketsAndLendersByHooksInstanceOrController:
     handleGetMarketsAndLendersByHooksInstanceOrController,
+  getIncompleteWithdrawalsForMarket:
+    handleGetIncompleteWithdrawalsForMarket,
 }
 
 async function fallbackToSubgraph(body: string): Promise<NextResponse> {
