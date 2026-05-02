@@ -148,6 +148,99 @@ async function handleGetIncompleteWithdrawalsForMarket(vars: Variables) {
   return { market: { withdrawalBatches: data.batches } }
 }
 
+async function handleGetAuthorizedLendersByMarket(vars: Variables) {
+  const market = (vars.market as string).toLowerCase()
+  const [marketResp, lendersResp] = await Promise.all([
+    indexerGet(`/markets/${CHAIN_ID}/${market}`) as Promise<{
+      market: Record<string, unknown>
+    }>,
+    indexerGet(
+      `/markets/${CHAIN_ID}/${market}/active-lenders?limit=1000`,
+    ) as Promise<{ lenders: Record<string, unknown>[] }>,
+  ])
+
+  const hooks = marketResp.market.hooks as { id: string } | null
+  let authorizedLenders: unknown[] = []
+  if (hooks?.id) {
+    const hooksData = (await indexerGet(
+      `/hooks/${CHAIN_ID}/${hooks.id}/lenders?limit=200`,
+    )) as { hooksInstance: { lenders: Record<string, unknown>[] } }
+    authorizedLenders = hooksData.hooksInstance.lenders.map((l) => ({
+      lender: l.lender,
+      authorized: true,
+      changes: [
+        { blockTimestamp: String(l.lastApprovalTimestamp || l.addedTimestamp) },
+      ],
+    }))
+  }
+
+  return {
+    market: {
+      controller: { authorizedLenders },
+      lenders: lendersResp.lenders.map((l) => ({
+        address: l.address || l.lender,
+        scaledBalance: l.scaledBalance || "0",
+        role: l.role || "Null",
+      })),
+    },
+  }
+}
+
+async function handleGetAllAuthorizedLenders(vars: Variables) {
+  const borrower = (vars.borrower as string).toLowerCase()
+  const marketsData = (await indexerGet(
+    `/markets/${CHAIN_ID}?borrower=${borrower}&limit=1000`,
+  )) as { markets: Record<string, unknown>[] }
+
+  const openMarkets = marketsData.markets.filter((m) => !m.isClosed)
+
+  const hooksIds = new Set<string>()
+  for (const m of openMarkets) {
+    const hooks = m.hooks as { id: string } | null
+    if (hooks?.id) hooksIds.add(hooks.id)
+  }
+
+  const hooksLenderMap = new Map<string, Record<string, unknown>[]>()
+  await Promise.all(
+    Array.from(hooksIds).map(async (hid) => {
+      const data = (await indexerGet(
+        `/hooks/${CHAIN_ID}/${hid}/lenders?limit=200`,
+      )) as { hooksInstance: { lenders: Record<string, unknown>[] } }
+      hooksLenderMap.set(hid, data.hooksInstance.lenders)
+    }),
+  )
+
+  return {
+    markets: openMarkets.map((m) => {
+      const hooks = m.hooks as { id: string } | null
+      const hooksLenders = hooks?.id
+        ? hooksLenderMap.get(hooks.id) ?? []
+        : []
+
+      return {
+        id: m.id,
+        name: m.name,
+        controller: {
+          authorizedLenders: hooksLenders.map((l) => ({
+            lender: l.lender,
+            authorized: true,
+            changes: [
+              {
+                blockTimestamp: String(
+                  l.lastApprovalTimestamp || l.addedTimestamp,
+                ),
+              },
+            ],
+          })),
+        },
+        hooks: hooks
+          ? { lenders: hooksLenders }
+          : null,
+      }
+    }),
+  }
+}
+
 async function handleGetMarketRecords(vars: Variables) {
   const market = (vars.market as string).toLowerCase()
   const limit = vars.limit ?? 500
@@ -261,6 +354,8 @@ const QUERY_HANDLERS: Record<string, (vars: Variables) => Promise<unknown>> = {
     handleGetMarketsAndLendersByHooksInstanceOrController,
   getIncompleteWithdrawalsForMarket:
     handleGetIncompleteWithdrawalsForMarket,
+  getAuthorizedLendersByMarket: handleGetAuthorizedLendersByMarket,
+  getAllAuthorizedLenders: handleGetAllAuthorizedLenders,
 }
 
 async function fallbackToSubgraph(body: string): Promise<NextResponse> {
